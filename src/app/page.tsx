@@ -1,58 +1,503 @@
-import Link from "next/link";
+"use client";
 
-const DIRECTIONS = [
-  {
-    href: "/toolbox",
-    name: "The Toolbox",
-    kicker: "ASSIGNED DIRECTION",
-    description:
-      "A fully-stocked, foam-cut mechanic's tool chest — every drawer already holds the exact tool for one job. Engineering red, brushed steel, stenciled labels.",
-  },
-  {
-    href: "/franchise",
-    name: "The Franchise Territory Kit",
-    kicker: "IMPECCABLE'S PICK",
-    description:
-      "A numbered franchise territory, handed to you — binder tabs, foil-stamped branding, a territory map of the 25 launch spots.",
-  },
-  {
-    href: "/standard",
-    name: "Standard SaaS",
-    kicker: "STANDING EXIT",
-    description:
-      "The category default, executed at full craft — dark ground, one accent, no metaphor.",
-  },
-];
+import { Bitter, Archivo } from "next/font/google";
+import Image from "next/image";
+import { useState } from "react";
+import {
+  FAQS,
+  FOUNDER,
+  GUARANTEE,
+  PRICE,
+  SPOTS,
+  SUPPORT_CHANNEL,
+  TOOLS,
+  TRIAL,
+} from "@/lib/content";
 
-export default function DirectionPicker() {
+const serif = Bitter({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  variable: "--font-serif",
+});
+
+const label = Archivo({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-label",
+});
+
+const CREAM = "#F4EEDF";
+const CREAM_DARK = "#E7DEC7";
+const INK = "#1F2A22";
+const GREEN = "#1C4230";
+const GREEN_DEEP = "#122C20";
+const GOLD = "#A9812F";
+
+const TABS = ["Overview", "What You Get", "FAQ"];
+const tabHref = (tab: string) => `#${tab.toLowerCase().replace(/\s+/g, "-")}`;
+
+const PHONE_DISPLAY = "(470) 376-9804";
+const PHONE_TEL = "+14703769804";
+
+// This is the site's real home page — the franchise direction, chosen over
+// /toolbox and /standard (both still kept in the codebase for reference,
+// per PRODUCT.md, pending a decision on whether to remove them). It used to
+// live at /franchise; that path now redirects here (see next.config.ts) so
+// vibelabsagency.com's root serves the actual offer, not a dev-only
+// three-direction picker.
+export default function Home() {
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [leadEmail, setLeadEmail] = useState("");
+  const [leadSent, setLeadSent] = useState(false);
+  const remaining = SPOTS.total - SPOTS.claimed;
+
+  function submitLead(e: React.FormEvent) {
+    e.preventDefault();
+    // UI-only: no backend is wired up yet. Wire this to a real lead
+    // endpoint / CRM before launch — see PRODUCT.md open items.
+    setLeadSent(true);
+  }
+
   return (
-    <main
-      style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}
-      className="min-h-screen bg-neutral-100 text-neutral-900 flex items-center justify-center p-6"
+    <div
+      className={`${serif.variable} ${label.variable}`}
+      style={{ fontFamily: "var(--font-serif)", background: CREAM, color: INK }}
     >
-      <div className="max-w-3xl w-full">
-        <p className="text-xs tracking-[0.2em] uppercase text-neutral-500 mb-2">
-          Preview — pick a direction
-        </p>
-        <h1 className="text-3xl font-semibold mb-8">
-          VibeLabs Agency — three builds
-        </h1>
-        <div className="grid gap-4 sm:grid-cols-1">
-          {DIRECTIONS.map((d) => (
-            <Link
-              key={d.href}
-              href={d.href}
-              className="block rounded-xl border border-neutral-300 bg-white p-6 hover:border-neutral-900 transition-colors"
+      {/* ===== Binder tab nav ===== */}
+      <header className="sticky top-0 z-50" style={{ background: CREAM }}>
+        <div className="max-w-6xl mx-auto px-6 pt-5 flex items-end justify-between">
+          <div className="flex items-end">
+            {TABS.map((tab, i) => (
+              <a
+                key={tab}
+                href={tabHref(tab)}
+                className="px-4 py-2.5 mr-1 rounded-t-md text-xs tracking-[0.14em] uppercase"
+                style={{
+                  fontFamily: "var(--font-label)",
+                  background: i === 0 ? GREEN : CREAM_DARK,
+                  color: i === 0 ? CREAM : INK,
+                  fontWeight: 600,
+                }}
+              >
+                {tab}
+              </a>
+            ))}
+          </div>
+          <a
+            href="https://app.vibelabsagency.com/join?utm_source=vibelabs-v2&utm_campaign=franchise&utm_content=nav"
+            className="hidden sm:inline-block text-xs tracking-[0.14em] uppercase px-5 py-2.5 rounded-t-md"
+            style={{ fontFamily: "var(--font-label)", background: GOLD, color: GREEN_DEEP, fontWeight: 700 }}
+          >
+            Start Your Trial
+          </a>
+        </div>
+        <div className="h-[3px]" style={{ background: GREEN }} />
+      </header>
+
+      {/* ===== Hero: centered claim, dark franchise cover ===== */}
+      <section
+        id="overview"
+        className="text-center pt-20 pb-24 px-6"
+        style={{ background: GREEN_DEEP }}
+      >
+        <div className="max-w-4xl mx-auto">
+          <div
+            className="inline-flex items-center gap-2 text-xs px-3.5 py-1.5 rounded-full mb-7"
+            style={{
+              fontFamily: "var(--font-label)",
+              background: CREAM + "14",
+              border: `1px solid ${GOLD}88`,
+              color: CREAM + "cc",
+            }}
+          >
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: GOLD }} />
+            Founding launch &mdash; {remaining} of {SPOTS.total} spots left
+          </div>
+          <h1
+            className="text-4xl sm:text-6xl leading-[1.05] mb-6"
+            style={{ fontWeight: 700, color: CREAM }}
+          >
+            Your White-Label AI Agency,
+            <br />
+            <span style={{ color: GOLD }}>Built, Branded, and Guaranteed.</span>
+          </h1>
+          <p className="text-lg mx-auto max-w-2xl mb-10" style={{ color: CREAM + "b8" }}>
+            A fully branded AI-powered agency in your name, with the exact
+            tools to find, qualify, and close your first client &mdash;{" "}
+            {GUARANTEE.short.toLowerCase()}
+          </p>
+          <div className="flex flex-col items-center gap-3">
+            <a
+              href="https://app.vibelabsagency.com/join?utm_source=vibelabs-v2&utm_campaign=franchise&utm_content=hero"
+              className="px-9 py-4 rounded-sm text-base tracking-[0.06em] uppercase"
+              style={{
+                fontFamily: "var(--font-label)",
+                background: GOLD,
+                color: GREEN_DEEP,
+                fontWeight: 700,
+                boxShadow: `0 14px 34px ${GOLD}44`,
+              }}
             >
-              <p className="text-[11px] tracking-[0.15em] uppercase text-neutral-500 mb-1">
-                {d.kicker}
-              </p>
-              <h2 className="text-xl font-semibold mb-2">{d.name}</h2>
-              <p className="text-sm text-neutral-600">{d.description}</p>
-            </Link>
+              Start Your {TRIAL.days}-Day Free Trial
+            </a>
+            <span className="text-sm" style={{ color: CREAM + "88" }}>
+              {PRICE.currency}
+              {PRICE.monthly}/mo after trial &middot; card required, not
+              charged
+            </span>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== What you get — preview panel ===== */}
+      <section className="max-w-4xl mx-auto px-6 pt-20 pb-20">
+        <div
+          className="rounded-sm overflow-hidden"
+          style={{
+            background: CREAM_DARK,
+            border: `1px solid ${GOLD}55`,
+            boxShadow: "0 30px 70px rgba(18,44,32,.14)",
+          }}
+        >
+          <div
+            className="h-11 flex items-center justify-between px-5"
+            style={{ background: GREEN_DEEP }}
+          >
+            <span
+              className="text-[11px] tracking-[0.2em] uppercase"
+              style={{ fontFamily: "var(--font-label)", color: GOLD }}
+            >
+              What You Get
+            </span>
+            <span className="text-[11px]" style={{ color: CREAM + "aa" }}>
+              No. {String(SPOTS.claimed + 1).padStart(4, "0")}
+            </span>
+          </div>
+          <div className="p-6 grid sm:grid-cols-4 gap-4">
+            {TOOLS.map((tool) => (
+              <div
+                key={tool.id}
+                className="rounded-sm p-4"
+                style={{ background: CREAM, border: `1px solid ${CREAM_DARK}` }}
+              >
+                <p
+                  className="text-[10px] tracking-[0.15em] uppercase mb-2"
+                  style={{ fontFamily: "var(--font-label)", color: GOLD }}
+                >
+                  Included
+                </p>
+                <p className="text-sm" style={{ fontWeight: 700 }}>
+                  {tool.name}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ===== Guarantee — policy clause ===== */}
+      <section id="guarantee" className="max-w-4xl mx-auto px-6 py-16">
+        <div
+          className="relative rounded-sm p-8 sm:p-10"
+          style={{ background: CREAM_DARK, border: `1px solid ${GOLD}55` }}
+        >
+          <div
+            aria-hidden
+            className="absolute top-6 right-6 sm:top-8 sm:right-8 w-16 h-16 rounded-full hidden sm:flex items-center justify-center text-center"
+            style={{
+              border: `1.5px dashed ${GOLD}`,
+              color: GOLD,
+              transform: "rotate(-12deg)",
+              fontFamily: "var(--font-label)",
+            }}
+          >
+            <span className="text-[9px] tracking-[0.1em] uppercase leading-tight">
+              Guarantee
+              <br />
+              Certified
+            </span>
+          </div>
+          <p
+            className="text-[11px] tracking-[0.25em] uppercase mb-3"
+            style={{ fontFamily: "var(--font-label)", color: GOLD }}
+          >
+            Clause 1 — Client Guarantee
+          </p>
+          <h2 className="text-2xl sm:text-3xl mb-4 max-w-lg" style={{ fontWeight: 700 }}>
+            {GUARANTEE.headline}
+          </h2>
+          <p className="leading-relaxed mb-2 max-w-xl" style={{ color: INK + "dd" }}>
+            {GUARANTEE.policy}
+          </p>
+          <p className="text-sm" style={{ color: INK + "88" }}>
+            {GUARANTEE.windowDays}-day window from license activation. This is
+            a standing support commitment, not a refund.
+          </p>
+        </div>
+      </section>
+
+      {/* ===== What You Get — included tools ===== */}
+      <section id="what-you-get" className="max-w-6xl mx-auto px-6 pb-20">
+        <p
+          className="text-[11px] tracking-[0.25em] uppercase mb-2"
+          style={{ fontFamily: "var(--font-label)", color: GOLD }}
+        >
+          Schedule A
+        </p>
+        <h2 className="text-3xl sm:text-4xl mb-10" style={{ fontWeight: 700 }}>
+          What You Get
+        </h2>
+        <div className="divide-y" style={{ borderColor: CREAM_DARK }}>
+          {TOOLS.map((tool, i) => (
+            <div
+              key={tool.id}
+              className="py-6 grid sm:grid-cols-[80px_1fr] gap-4 sm:gap-8"
+              style={{ borderTop: i === 0 ? `1px solid ${CREAM_DARK}` : undefined }}
+            >
+              <span
+                className="text-3xl"
+                style={{ fontFamily: "var(--font-label)", color: GOLD, fontWeight: 700 }}
+              >
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <div>
+                <h3 className="text-lg mb-1.5" style={{ fontWeight: 700 }}>
+                  {tool.name}
+                </h3>
+                <p className="text-sm leading-relaxed" style={{ color: INK + "aa" }}>
+                  {tool.description}
+                </p>
+              </div>
+            </div>
           ))}
         </div>
+      </section>
+
+      {/* ===== Founder — license issuer ===== */}
+      <section
+        className="py-20"
+        style={{ background: GREEN_DEEP, color: CREAM }}
+      >
+        <div className="max-w-5xl mx-auto px-6 grid md:grid-cols-[200px_1fr] gap-10 items-start">
+          <div
+            className="rounded-sm overflow-hidden"
+            style={{ border: `3px solid ${GOLD}` }}
+          >
+            <Image
+              src={FOUNDER.photo}
+              alt={FOUNDER.name}
+              width={200}
+              height={250}
+              className="object-cover"
+              style={{ aspectRatio: "4/5", objectPosition: "50% 22%" }}
+            />
+          </div>
+          <div>
+            <p
+              className="text-[11px] tracking-[0.25em] uppercase mb-3"
+              style={{ fontFamily: "var(--font-label)", color: GOLD }}
+            >
+              Signed &amp; Issued By
+            </p>
+            <h2 className="text-2xl sm:text-3xl mb-1" style={{ fontWeight: 700 }}>
+              {FOUNDER.name}
+            </h2>
+            <p className="text-sm mb-6" style={{ color: GOLD }}>
+              {FOUNDER.credential}
+            </p>
+            <div className="space-y-4 leading-relaxed max-w-2xl" style={{ color: CREAM + "cc" }}>
+              {FOUNDER.bio.map((p, i) => (
+                <p key={i}>{p}</p>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== Pricing — fee schedule ===== */}
+      <section id="terms" className="max-w-3xl mx-auto px-6 py-20 text-center">
+        <p
+          className="text-[11px] tracking-[0.25em] uppercase mb-3"
+          style={{ fontFamily: "var(--font-label)", color: GOLD }}
+        >
+          Schedule B — Licensing Fee
+        </p>
+        <div className="flex items-end justify-center gap-1 mb-2">
+          <span className="text-2xl">{PRICE.currency}</span>
+          <span className="text-6xl" style={{ fontWeight: 700 }}>
+            {PRICE.monthly}
+          </span>
+          <span className="text-lg mb-1">/mo</span>
+        </div>
+        <p className="text-sm mb-8" style={{ color: INK + "88" }}>
+          One fee. No tiers. {remaining} of {SPOTS.total} founding spots
+          remain.
+        </p>
+        <a
+          href="https://app.vibelabsagency.com/join?utm_source=vibelabs-v2&utm_campaign=franchise&utm_content=pricing"
+          className="inline-block px-9 py-4 rounded-sm text-base tracking-[0.06em] uppercase mb-3"
+          style={{
+            fontFamily: "var(--font-label)",
+            background: GOLD,
+            color: GREEN_DEEP,
+            fontWeight: 700,
+            boxShadow: `0 14px 34px ${GOLD}33`,
+          }}
+        >
+          Start Your {TRIAL.days}-Day Free Trial
+        </a>
+        <p className="text-xs" style={{ color: INK + "77" }}>
+          Card required, not charged for {TRIAL.days} days &middot;{" "}
+          {SUPPORT_CHANNEL}
+        </p>
+      </section>
+
+      {/* ===== FAQ — disclosure ===== */}
+      <section id="faq" className="max-w-3xl mx-auto px-6 pb-20">
+        <p
+          className="text-[11px] tracking-[0.25em] uppercase mb-2"
+          style={{ fontFamily: "var(--font-label)", color: GOLD }}
+        >
+          Schedule C — Disclosure
+        </p>
+        <h2 className="text-2xl mb-6" style={{ fontWeight: 700 }}>
+          Frequently Asked
+        </h2>
+        <div className="space-y-0 divide-y" style={{ borderColor: CREAM_DARK }}>
+          {FAQS.map((faq, i) => (
+            <div key={faq.q}>
+              <button
+                onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                className="w-full flex items-center justify-between text-left py-4"
+              >
+                <span className="text-sm font-medium">{faq.q}</span>
+                <span style={{ color: GOLD }}>{openFaq === i ? "−" : "+"}</span>
+              </button>
+              {openFaq === i && (
+                <p
+                  className="pb-4 text-sm leading-relaxed"
+                  style={{ color: INK + "99" }}
+                >
+                  {faq.a}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ===== Footer ===== */}
+      <footer style={{ background: GREEN_DEEP, color: CREAM + "88" }}>
+        <div className="max-w-6xl mx-auto px-6 py-10 flex flex-col sm:flex-row justify-between gap-4 text-xs">
+          <div className="flex flex-col gap-1.5">
+            <span style={{ fontFamily: "var(--font-label)" }}>
+              VIBELABS AGENCY — FOUNDING LAUNCH
+            </span>
+            <a href={`tel:${PHONE_TEL}`} className="hover:text-white w-fit">
+              Call {PHONE_DISPLAY}
+            </a>
+          </div>
+          <div className="flex gap-5">
+            <a href="/legal/privacy" className="hover:text-white">
+              Privacy
+            </a>
+            <a href="/legal/terms" className="hover:text-white">
+              Terms
+            </a>
+            <a href="/legal/earnings" className="hover:text-white">
+              Earnings Disclaimer
+            </a>
+          </div>
+        </div>
+      </footer>
+
+      {/* ===== Chat widget — contact & lead capture ===== */}
+      <div className="fixed bottom-5 right-5 z-[60]" style={{ fontFamily: "var(--font-label)" }}>
+        {chatOpen && (
+          <div
+            className="mb-3 w-[300px] rounded-md overflow-hidden"
+            style={{
+              background: CREAM,
+              border: `1px solid ${GOLD}66`,
+              boxShadow: "0 24px 60px rgba(18,44,32,.35)",
+            }}
+          >
+            <div
+              className="px-4 py-3 flex items-center justify-between"
+              style={{ background: GREEN_DEEP }}
+            >
+              <span
+                className="text-xs tracking-[0.1em] uppercase"
+                style={{ color: GOLD, fontWeight: 700 }}
+              >
+                Chat with VibeLabs
+              </span>
+              <button
+                aria-label="Close chat"
+                onClick={() => setChatOpen(false)}
+                style={{ color: CREAM + "aa" }}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-4">
+              <p className="text-sm leading-relaxed mb-3" style={{ color: INK + "cc" }}>
+                Questions before you start your trial? Call us directly or
+                leave your email and we&rsquo;ll get back to you.
+              </p>
+              <a
+                href={`tel:${PHONE_TEL}`}
+                className="block text-sm font-semibold mb-4"
+                style={{ color: GREEN }}
+              >
+                {PHONE_DISPLAY}
+              </a>
+              {leadSent ? (
+                <p
+                  className="text-sm rounded-sm p-3"
+                  style={{ background: CREAM_DARK, color: INK + "cc" }}
+                >
+                  Thanks — we&rsquo;ll be in touch shortly.
+                </p>
+              ) : (
+                <form onSubmit={submitLead} className="flex flex-col gap-2">
+                  <input
+                    type="email"
+                    required
+                    placeholder="you@email.com"
+                    value={leadEmail}
+                    onChange={(e) => setLeadEmail(e.target.value)}
+                    className="text-sm px-3 py-2.5 rounded-sm outline-none"
+                    style={{ background: "#fff", border: `1px solid ${CREAM_DARK}`, color: INK }}
+                  />
+                  <button
+                    type="submit"
+                    className="text-xs tracking-[0.08em] uppercase px-3 py-2.5 rounded-sm"
+                    style={{ background: GREEN, color: CREAM, fontWeight: 700 }}
+                  >
+                    Get a Callback
+                  </button>
+                </form>
+              )}
+            </div>
+          </div>
+        )}
+        <button
+          onClick={() => setChatOpen((v) => !v)}
+          aria-label="Open chat"
+          className="w-14 h-14 rounded-full flex items-center justify-center"
+          style={{
+            background: GOLD,
+            color: GREEN_DEEP,
+            boxShadow: `0 14px 30px ${GOLD}55`,
+          }}
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+          </svg>
+        </button>
       </div>
-    </main>
+    </div>
   );
 }
