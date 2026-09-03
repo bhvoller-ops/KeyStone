@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { notifyChatWidgetLead } from "@/lib/notify";
+import { notifyChatWidgetLead, notifyWhatsApp } from "@/lib/notify";
 
 const schema = z.object({
   email: z.string().email().max(200),
@@ -50,18 +50,27 @@ export async function POST(request: Request) {
   }
 
   const referrer = request.headers.get("referer") ?? undefined;
-  const sent = await notifyChatWidgetLead({
-    email,
-    message: message || undefined,
-    referrer,
-    // One notification per email+minute-bucket — a genuine retry from the
-    // same visitor within that window won't double-send, but a second real
-    // submission a few minutes later still will (this is a lead, not a
-    // ticket — no need for stronger de-dup than that).
-    idempotencyKey: `chat-widget-lead/${email}/${Math.floor(Date.now() / 60_000)}`,
-  });
 
-  if (!sent) {
+  // Two independent channels — run in parallel, never let one's failure
+  // block or hide the other. As long as at least one actually lands, the
+  // lead reached a human; only fail the request if both did.
+  const [emailSent, whatsappSent] = await Promise.all([
+    notifyChatWidgetLead({
+      email,
+      message: message || undefined,
+      referrer,
+      // One notification per email+minute-bucket — a genuine retry from the
+      // same visitor within that window won't double-send, but a second
+      // real submission a few minutes later still will (this is a lead,
+      // not a ticket — no need for stronger de-dup than that).
+      idempotencyKey: `chat-widget-lead/${email}/${Math.floor(Date.now() / 60_000)}`,
+    }),
+    notifyWhatsApp(
+      `New VibeLabs lead: ${email}${message ? `\n"${message}"` : ""}`
+    ),
+  ]);
+
+  if (!emailSent && !whatsappSent) {
     return NextResponse.json(
       { error: "Something went wrong sending that — please call us instead." },
       { status: 502 }

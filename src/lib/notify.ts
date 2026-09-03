@@ -48,3 +48,37 @@ export async function notifyChatWidgetLead(input: {
   }
   return true;
 }
+
+/**
+ * WhatsApp alert via CallMeBot — a free, personal-use-only relay (you
+ * message their bot once from your own WhatsApp to link your number and get
+ * an API key back; this is NOT Meta's official WhatsApp Business Cloud API,
+ * has no delivery guarantees or SLA, and is a deliberate stopgap until a
+ * real Twilio WhatsApp integration replaces it. See
+ * https://www.callmebot.com/blog/free-api-whatsapp-messages/
+ *
+ * Silently no-ops (not an error) if the two env vars aren't set, so this
+ * stays optional — email alone is still enough for the widget to "work."
+ */
+export async function notifyWhatsApp(message: string) {
+  const apiKey = process.env.CALLMEBOT_APIKEY;
+  const phone = process.env.CALLMEBOT_PHONE;
+  if (!apiKey || !phone) return false;
+
+  try {
+    const url = `https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(phone)}&text=${encodeURIComponent(message)}&apikey=${encodeURIComponent(apiKey)}`;
+    const res = await fetch(url, { method: "GET" });
+    const body = await res.text().catch(() => "");
+    // CallMeBot returns 200 with an error message in the body on failure
+    // (e.g. an unregistered number) rather than a non-2xx status, so the
+    // body text has to be checked, not just res.ok.
+    if (!res.ok || /error/i.test(body)) {
+      console.error("Failed to send WhatsApp notification:", res.status, body);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error("Failed to send WhatsApp notification:", err);
+    return false;
+  }
+}
