@@ -2,7 +2,7 @@
 
 import { Bitter, Archivo } from "next/font/google";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FAQS,
   FOUNDER,
@@ -51,6 +51,34 @@ const TABS: { label: string; href: string; external?: boolean }[] = [
 const PHONE_DISPLAY = "(470) 376-9804";
 const PHONE_TEL = "+14703769804";
 
+/**
+ * Reveals .reveal/.stamp-seal elements once, the moment they enter view —
+ * paperwork settling into place, not a scroll-jack effect. One shared
+ * observer for the whole page rather than one per element. No-ops (leaves
+ * everything visible, see globals.css's reduced-motion block) when the
+ * visitor prefers reduced motion — the observer still runs, it just adds a
+ * class that the reduced-motion CSS overrides back to its resting state.
+ */
+function useScrollReveal() {
+  useEffect(() => {
+    const targets = document.querySelectorAll<HTMLElement>(".reveal, .stamp-seal");
+    if (targets.length === 0) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("in-view");
+            observer.unobserve(entry.target);
+          }
+        }
+      },
+      { threshold: 0.2, rootMargin: "0px 0px -8% 0px" }
+    );
+    targets.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+}
+
 // This is the site's real home page — the franchise direction, chosen over
 // /toolbox and /standard (both still kept in the codebase for reference,
 // per PRODUCT.md, pending a decision on whether to remove them). It used to
@@ -67,6 +95,7 @@ export default function Home() {
   const [leadSending, setLeadSending] = useState(false);
   const [leadError, setLeadError] = useState<string | null>(null);
   const remaining = SPOTS.total - SPOTS.claimed;
+  useScrollReveal();
 
   async function submitLead(e: React.FormEvent) {
     e.preventDefault();
@@ -103,7 +132,7 @@ export default function Home() {
               <a
                 key={tab.label}
                 href={tab.href}
-                className="px-4 py-2.5 mr-1 rounded-t-md text-xs tracking-[0.14em] uppercase"
+                className="px-4 py-2.5 mr-1 rounded-t-md text-xs tracking-[0.14em] uppercase transition-transform duration-150 ease-out hover:-translate-y-0.5"
                 style={{
                   fontFamily: "var(--font-label)",
                   background: i === 0 ? GREEN : CREAM_DARK,
@@ -117,7 +146,7 @@ export default function Home() {
           </div>
           <a
             href="https://app.vibelabsagency.com/join?utm_source=vibelabs-v2&utm_campaign=franchise&utm_content=nav"
-            className="hidden sm:inline-block text-xs tracking-[0.14em] uppercase px-5 py-2.5 rounded-t-md"
+            className="hidden sm:inline-block text-xs tracking-[0.14em] uppercase px-5 py-2.5 rounded-t-md transition-transform duration-150 ease-out hover:-translate-y-0.5 active:translate-y-0"
             style={{ fontFamily: "var(--font-label)", background: GOLD, color: GREEN_DEEP, fontWeight: 700 }}
           >
             Start Your Trial
@@ -161,7 +190,7 @@ export default function Home() {
           <div className="flex flex-col items-center gap-3">
             <a
               href="https://app.vibelabsagency.com/join?utm_source=vibelabs-v2&utm_campaign=franchise&utm_content=hero"
-              className="px-9 py-4 rounded-sm text-base tracking-[0.06em] uppercase"
+              className="px-9 py-4 rounded-sm text-base tracking-[0.06em] uppercase transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-1 active:translate-y-0"
               style={{
                 fontFamily: "var(--font-label)",
                 background: GOLD,
@@ -206,11 +235,11 @@ export default function Home() {
             </span>
           </div>
           <div className="p-6 grid sm:grid-cols-4 gap-4">
-            {TOOLS.map((tool) => (
+            {TOOLS.map((tool, i) => (
               <div
                 key={tool.id}
-                className="rounded-sm p-4"
-                style={{ background: CREAM, border: `1px solid ${CREAM_DARK}` }}
+                className="reveal rounded-sm p-4"
+                style={{ background: CREAM, border: `1px solid ${CREAM_DARK}`, transitionDelay: `${i * 70}ms` }}
               >
                 <p
                   className="text-[10px] tracking-[0.15em] uppercase mb-2"
@@ -235,11 +264,10 @@ export default function Home() {
         >
           <div
             aria-hidden
-            className="absolute top-6 right-6 sm:top-8 sm:right-8 w-16 h-16 rounded-full hidden sm:flex items-center justify-center text-center"
+            className="stamp-seal absolute top-6 right-6 sm:top-8 sm:right-8 w-16 h-16 rounded-full hidden sm:flex items-center justify-center text-center"
             style={{
               border: `1.5px dashed ${GOLD}`,
               color: GOLD,
-              transform: "rotate(-12deg)",
               fontFamily: "var(--font-label)",
             }}
           >
@@ -283,8 +311,11 @@ export default function Home() {
           {TOOLS.map((tool, i) => (
             <div
               key={tool.id}
-              className="py-6 grid sm:grid-cols-[80px_1fr] gap-4 sm:gap-8"
-              style={{ borderTop: i === 0 ? `1px solid ${CREAM_DARK}` : undefined }}
+              className="reveal py-6 grid sm:grid-cols-[80px_1fr] gap-4 sm:gap-8"
+              style={{
+                borderTop: i === 0 ? `1px solid ${CREAM_DARK}` : undefined,
+                transitionDelay: `${Math.min(i * 80, 240)}ms`,
+              }}
             >
               <span
                 className="text-3xl"
@@ -367,7 +398,7 @@ export default function Home() {
         </p>
         <a
           href="https://app.vibelabsagency.com/join?utm_source=vibelabs-v2&utm_campaign=franchise&utm_content=pricing"
-          className="inline-block px-9 py-4 rounded-sm text-base tracking-[0.06em] uppercase mb-3"
+          className="inline-block px-9 py-4 rounded-sm text-base tracking-[0.06em] uppercase mb-3 transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-1 active:translate-y-0"
           style={{
             fontFamily: "var(--font-label)",
             background: GOLD,
@@ -396,25 +427,38 @@ export default function Home() {
           Frequently Asked
         </h2>
         <div className="space-y-0 divide-y" style={{ borderColor: CREAM_DARK }}>
-          {FAQS.map((faq, i) => (
-            <div key={faq.q}>
-              <button
-                onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                className="w-full flex items-center justify-between text-left py-4"
-              >
-                <span className="text-sm font-medium">{faq.q}</span>
-                <span style={{ color: GOLD }}>{openFaq === i ? "−" : "+"}</span>
-              </button>
-              {openFaq === i && (
-                <p
-                  className="pb-4 text-sm leading-relaxed"
-                  style={{ color: INK + "99" }}
+          {FAQS.map((faq, i) => {
+            const open = openFaq === i;
+            return (
+              <div key={faq.q}>
+                <button
+                  onClick={() => setOpenFaq(open ? null : i)}
+                  className="w-full flex items-center justify-between text-left py-4"
+                  aria-expanded={open}
                 >
-                  {faq.a}
-                </p>
-              )}
-            </div>
-          ))}
+                  <span className="text-sm font-medium">{faq.q}</span>
+                  <span
+                    className="transition-transform duration-200 ease-out"
+                    style={{ color: GOLD, transform: open ? "rotate(45deg)" : "rotate(0deg)" }}
+                  >
+                    +
+                  </span>
+                </button>
+                {/* CSS-grid height trick — grid-template-rows animates cleanly
+                    where height:auto can't, no JS-measured pixel heights. */}
+                <div
+                  className="grid transition-[grid-template-rows] duration-300 ease-out"
+                  style={{ gridTemplateRows: open ? "1fr" : "0fr" }}
+                >
+                  <div className="overflow-hidden">
+                    <p className="pb-4 text-sm leading-relaxed" style={{ color: INK + "99" }}>
+                      {faq.a}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -447,7 +491,7 @@ export default function Home() {
       <div className="fixed bottom-5 right-5 z-[60]" style={{ fontFamily: "var(--font-label)" }}>
         {chatOpen && (
           <div
-            className="mb-3 w-[300px] rounded-md overflow-hidden"
+            className="chat-panel-in mb-3 w-[300px] rounded-md overflow-hidden"
             style={{
               background: CREAM,
               border: `1px solid ${GOLD}66`,
@@ -534,7 +578,7 @@ export default function Home() {
                   <button
                     type="submit"
                     disabled={leadSending}
-                    className="text-xs tracking-[0.08em] uppercase px-3 py-2.5 rounded-sm disabled:opacity-60"
+                    className="text-xs tracking-[0.08em] uppercase px-3 py-2.5 rounded-sm disabled:opacity-60 transition-transform duration-150 ease-out hover:-translate-y-0.5 active:translate-y-0"
                     style={{ background: GREEN, color: CREAM, fontWeight: 700 }}
                   >
                     {leadSending ? "Sending…" : "Get a Callback"}
@@ -547,7 +591,7 @@ export default function Home() {
         <button
           onClick={() => setChatOpen((v) => !v)}
           aria-label="Open chat"
-          className="w-14 h-14 rounded-full flex items-center justify-center"
+          className="w-14 h-14 rounded-full flex items-center justify-center transition-transform duration-150 ease-out hover:scale-105 active:scale-95"
           style={{
             background: GOLD,
             color: GREEN_DEEP,
