@@ -45,3 +45,7 @@ stripe-*.jpg
 
 .vercel
 .env*
+
+# impeccable's own runtime state for its live-overlay/critique tooling —
+# session artifacts, not project content
+.impeccable/live/
