@@ -164,6 +164,7 @@ export default function Home() {
   const [leadSending, setLeadSending] = useState(false);
   const [leadError, setLeadError] = useState<string | null>(null);
   const remaining = SPOTS.total - SPOTS.claimed;
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   useScrollReveal();
   const activeTab = useNavScrollSpy();
 
@@ -197,12 +198,15 @@ export default function Home() {
       {/* ===== Binder tab nav ===== */}
       <header className="sticky top-0 z-50" style={{ background: CREAM }}>
         <div className="max-w-6xl mx-auto px-6 pt-5 flex items-end justify-between">
-          <div className="flex items-end">
+          {/* Desktop tabs — hidden below sm, replaced by the hamburger panel.
+              py-3.5 (was py-2.5): measured live at 36px tall, below the
+              44px touch-target guideline (found by /impeccable audit). */}
+          <div className="hidden sm:flex items-end">
             {TABS.map((tab, i) => (
               <a
                 key={tab.label}
                 href={tab.href}
-                className="px-4 py-2.5 mr-1 rounded-t-md text-xs tracking-[0.14em] uppercase transition-transform duration-150 ease-out hover:-translate-y-0.5"
+                className="px-4 py-3.5 mr-1 rounded-t-md text-xs tracking-[0.14em] uppercase transition-transform duration-150 ease-out hover:-translate-y-0.5"
                 style={{
                   fontFamily: "var(--font-label)",
                   background: i === activeTab ? GREEN : CREAM_DARK,
@@ -217,13 +221,81 @@ export default function Home() {
           </div>
           <a
             href="https://app.vibelabsagency.com/join?utm_source=vibelabs-v2&utm_campaign=franchise&utm_content=nav"
-            className="hidden sm:inline-block text-xs tracking-[0.14em] uppercase px-5 py-2.5 rounded-t-md transition-transform duration-150 ease-out hover:-translate-y-0.5 active:translate-y-0"
+            className="hidden sm:inline-block text-xs tracking-[0.14em] uppercase px-5 py-3.5 rounded-t-md transition-transform duration-150 ease-out hover:-translate-y-0.5 active:translate-y-0"
             style={{ fontFamily: "var(--font-label)", background: GOLD, color: GREEN_DEEP, fontWeight: 700 }}
           >
             Start Your Trial
           </a>
+
+          {/* Mobile — a real collapse affordance where none existed before
+              (flagged as unresolved in the surface brief itself, then
+              confirmed by /impeccable audit: 4 tabs had no flex-wrap or
+              collapse logic at any breakpoint). */}
+          <div className="flex sm:hidden items-center justify-between w-full py-2">
+            <span
+              className="text-sm font-semibold tracking-[0.02em]"
+              style={{ fontFamily: "var(--font-serif)", color: GREEN_DEEP }}
+            >
+              VibeLabs Agency
+            </span>
+            <button
+              onClick={() => setMobileNavOpen((v) => !v)}
+              aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileNavOpen}
+              className="flex flex-col items-center justify-center gap-1.5 w-11 h-11 rounded-sm"
+              style={{ background: CREAM_DARK }}
+            >
+              <span
+                className="block w-5 h-[2px] transition-transform duration-200 ease-out"
+                style={{ background: GREEN_DEEP, transform: mobileNavOpen ? "translateY(3.5px) rotate(45deg)" : "none" }}
+              />
+              <span
+                className="block w-5 h-[2px] transition-opacity duration-150 ease-out"
+                style={{ background: GREEN_DEEP, opacity: mobileNavOpen ? 0 : 1 }}
+              />
+              <span
+                className="block w-5 h-[2px] transition-transform duration-200 ease-out"
+                style={{ background: GREEN_DEEP, transform: mobileNavOpen ? "translateY(-3.5px) rotate(-45deg)" : "none" }}
+              />
+            </button>
+          </div>
         </div>
         <div className="h-[3px]" style={{ background: GREEN }} />
+
+        {/* Mobile nav panel */}
+        <div
+          className="sm:hidden grid transition-[grid-template-rows] duration-250 ease-out overflow-hidden"
+          style={{ background: CREAM_DARK, gridTemplateRows: mobileNavOpen ? "1fr" : "0fr" }}
+        >
+          <div className="overflow-hidden">
+            <nav className="flex flex-col px-6 py-2">
+              {TABS.map((tab, i) => (
+                <a
+                  key={tab.label}
+                  href={tab.href}
+                  onClick={() => setMobileNavOpen(false)}
+                  className="py-3.5 text-sm tracking-[0.04em] uppercase border-b"
+                  style={{
+                    fontFamily: "var(--font-label)",
+                    color: i === activeTab ? GREEN_DEEP : INK,
+                    fontWeight: i === activeTab ? 700 : 600,
+                    borderColor: CREAM,
+                  }}
+                >
+                  {tab.label}
+                </a>
+              ))}
+              <a
+                href="https://app.vibelabsagency.com/join?utm_source=vibelabs-v2&utm_campaign=franchise&utm_content=mobile-nav"
+                onClick={() => setMobileNavOpen(false)}
+                className="mt-4 mb-3 text-center py-3.5 rounded-sm text-sm tracking-[0.06em] uppercase"
+                style={{ fontFamily: "var(--font-label)", background: GOLD, color: GREEN_DEEP, fontWeight: 700 }}
+              >
+                Start Your Trial
+              </a>
+            </nav>
+          </div>
+        </div>
       </header>
 
       {/* ===== Hero: centered claim, dark franchise cover ===== */}
@@ -456,13 +528,17 @@ export default function Home() {
         >
           Schedule B — Licensing Fee
         </p>
-        <div className="flex items-end justify-center gap-1 mb-2">
+        {/* Every other major section has an <h2> — this one didn't, so a
+            screen-reader user navigating by heading skipped the price
+            entirely (found by /impeccable audit). Same visual styling,
+            just the correct element. */}
+        <h2 className="flex items-end justify-center gap-1 mb-2">
           <span className="text-2xl">{PRICE.currency}</span>
           <span className="text-6xl" style={{ fontWeight: 700 }}>
             {PRICE.monthly}
           </span>
           <span className="text-lg mb-1">/mo</span>
-        </div>
+        </h2>
         <p className="text-sm mb-8" style={{ color: INK + "88" }}>
           One fee. No tiers. {remaining} of {SPOTS.total} founding spots
           remain.
@@ -608,7 +684,14 @@ export default function Home() {
                 </p>
               ) : (
                 <form onSubmit={submitLead} className="flex flex-col gap-2">
+                  {/* Placeholder text isn't an accessible name — confirmed
+                      live by /impeccable audit (labels.length === 0, no
+                      aria-label, no id). Visually-hidden real labels. */}
+                  <label htmlFor="chat-lead-email" className="sr-only">
+                    Your email
+                  </label>
                   <input
+                    id="chat-lead-email"
                     type="email"
                     required
                     placeholder="you@email.com"
@@ -618,7 +701,11 @@ export default function Home() {
                     className="text-sm px-3 py-2.5 rounded-sm outline-none disabled:opacity-60"
                     style={{ background: "#fff", border: `1px solid ${CREAM_DARK}`, color: INK }}
                   />
+                  <label htmlFor="chat-lead-message" className="sr-only">
+                    Your message (optional)
+                  </label>
                   <textarea
+                    id="chat-lead-message"
                     placeholder="What's on your mind? (optional)"
                     value={leadMessage}
                     onChange={(e) => setLeadMessage(e.target.value)}
