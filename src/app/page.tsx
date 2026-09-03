@@ -33,8 +33,20 @@ const GREEN = "#1C4230";
 const GREEN_DEEP = "#122C20";
 const GOLD = "#A9812F";
 
-const TABS = ["Overview", "What You Get", "FAQ"];
-const tabHref = (tab: string) => `#${tab.toLowerCase().replace(/\s+/g, "-")}`;
+// Same-page anchors, plus a real handoff tab — VibeLabs-v2 stays a thin
+// marketing front door, so "Partner With Us" reuses webgenie-ai's already-
+// real, already-working partner/referral program rather than standing up a
+// second one. Matches how the CTAs already hand off to /join.
+const TABS: { label: string; href: string; external?: boolean }[] = [
+  { label: "Overview", href: "#overview" },
+  { label: "What You Get", href: "#what-you-get" },
+  { label: "FAQ", href: "#faq" },
+  {
+    label: "Partner With Us",
+    href: "https://app.vibelabsagency.com/partner-signup?utm_source=vibelabs-v2&utm_campaign=franchise&utm_content=nav",
+    external: true,
+  },
+];
 
 const PHONE_DISPLAY = "(470) 376-9804";
 const PHONE_TEL = "+14703769804";
@@ -89,8 +101,8 @@ export default function Home() {
           <div className="flex items-end">
             {TABS.map((tab, i) => (
               <a
-                key={tab}
-                href={tabHref(tab)}
+                key={tab.label}
+                href={tab.href}
                 className="px-4 py-2.5 mr-1 rounded-t-md text-xs tracking-[0.14em] uppercase"
                 style={{
                   fontFamily: "var(--font-label)",
@@ -99,7 +111,7 @@ export default function Home() {
                   fontWeight: 600,
                 }}
               >
-                {tab}
+                {tab.label}
               </a>
             ))}
           </div>
