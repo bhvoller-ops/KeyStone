@@ -103,11 +103,12 @@ The marketing site itself moves from **early-access / waitlist** to
   on-page chat/lead-capture widget added on the `/franchise` build:
   **(470) 376-9804**, shown in the footer and inside the widget. No
   community platform (Discord/Slack/Circle) exists for this launch.
-- **The on-page chat widget's lead-capture form is UI-only right now** —
-  it shows a "we'll be in touch" confirmation but is not wired to any real
-  backend, CRM, or notification. Must be connected to a real intake
-  (email service, CRM, or ticketing system) before this replaces the live
-  site.
+- **The on-page chat widget's lead-capture form is real, wired to `/api/lead`**:
+  a submission sends a real email (via the same verified Resend account/
+  domain webgenie-ai uses) and a WhatsApp alert (CallMeBot, a disclosed
+  personal-use stopgap until real Twilio is set up) to the operator, with
+  reply-to set to the lead's own email. Includes a honeypot and a
+  best-effort per-IP rate limit. Live-verified against production.
 - **Rebrandable product name is open/undecided:** members white-label
   "something" as their own agency/platform — the specific product/platform
   being rebranded has no name yet. Use a clearly-marked placeholder in any
