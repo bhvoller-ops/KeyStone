@@ -32,6 +32,13 @@ const INK = "#1F2A22";
 const GREEN = "#1C4230";
 const GREEN_DEEP = "#122C20";
 const GOLD = "#A9812F";
+// GOLD itself fails WCAG AA (4.5:1) as small text on every background it's
+// used against — 2.7:1 on CREAM_DARK, 3.1:1 on CREAM, 4.2:1 on GREEN_DEEP
+// (measured live by /impeccable critique's detector pass). These two are
+// for text specifically — GOLD unchanged for buttons/borders/accents,
+// where it's already paired correctly (e.g. GREEN_DEEP-on-GOLD buttons).
+const GOLD_ON_LIGHT = "#7C591F"; // small text on CREAM/CREAM_DARK — 5.49:1 / 4.74:1
+const GOLD_ON_DARK = "#C9A44D"; // small text on GREEN_DEEP — 6.33:1
 
 // Same-page anchors, plus a real handoff tab — VibeLabs-v2 stays a thin
 // marketing front door, so "Partner With Us" reuses webgenie-ai's already-
@@ -63,6 +70,28 @@ function useScrollReveal() {
   useEffect(() => {
     const targets = document.querySelectorAll<HTMLElement>(".reveal, .stamp-seal");
     if (targets.length === 0) return;
+
+    // Real bug, found live by /impeccable critique: a fast scroll (one
+    // large jump past a panel, then back up) could land it fully inside
+    // the viewport without ever getting revealed — a strict 20% threshold
+    // plus a shrunk-bottom rootMargin left a dead zone a big jump could
+    // land inside. Two fixes, not one: anything already on-screen the
+    // moment this effect runs gets revealed immediately and synchronously
+    // rather than waiting on the observer at all; anything still off-
+    // screen uses a more permissive threshold/margin so a later jump is
+    // far less likely to land in a gap again.
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    const remaining: HTMLElement[] = [];
+    targets.forEach((el) => {
+      const rect = el.getBoundingClientRect();
+      if (rect.top < vh && rect.bottom > 0) {
+        el.classList.add("in-view");
+      } else {
+        remaining.push(el);
+      }
+    });
+    if (remaining.length === 0) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
@@ -72,11 +101,51 @@ function useScrollReveal() {
           }
         }
       },
-      { threshold: 0.2, rootMargin: "0px 0px -8% 0px" }
+      { threshold: 0, rootMargin: "0px 0px -5% 0px" }
     );
-    targets.forEach((el) => observer.observe(el));
+    remaining.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
   }, []);
+}
+
+// Which nav tab lights up for each real section — the binder-tab nav is
+// this page's signature interaction device, and it previously always
+// showed "Overview" as active no matter where the visitor had scrolled
+// to (found live by /impeccable critique). Sections without their own
+// tab (the guarantee clause, pricing) count toward the nearest tab above
+// them rather than getting no active state at all.
+const SECTION_TAB_MAP: Record<string, number> = {
+  overview: 0,
+  guarantee: 0,
+  "what-you-get": 1,
+  terms: 1,
+  faq: 2,
+};
+
+function useNavScrollSpy(): number {
+  const [activeTab, setActiveTab] = useState(0);
+  useEffect(() => {
+    const sections = Object.keys(SECTION_TAB_MAP)
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => el !== null);
+    if (sections.length === 0) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            const tab = SECTION_TAB_MAP[entry.target.id];
+            if (tab !== undefined) setActiveTab(tab);
+          }
+        }
+      },
+      // A thin detection band near the top of the viewport — "current
+      // section" is whichever section's start has just crossed it.
+      { rootMargin: "-15% 0px -80% 0px", threshold: 0 }
+    );
+    sections.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+  return activeTab;
 }
 
 // This is the site's real home page — the franchise direction, chosen over
@@ -96,6 +165,7 @@ export default function Home() {
   const [leadError, setLeadError] = useState<string | null>(null);
   const remaining = SPOTS.total - SPOTS.claimed;
   useScrollReveal();
+  const activeTab = useNavScrollSpy();
 
   async function submitLead(e: React.FormEvent) {
     e.preventDefault();
@@ -135,9 +205,10 @@ export default function Home() {
                 className="px-4 py-2.5 mr-1 rounded-t-md text-xs tracking-[0.14em] uppercase transition-transform duration-150 ease-out hover:-translate-y-0.5"
                 style={{
                   fontFamily: "var(--font-label)",
-                  background: i === 0 ? GREEN : CREAM_DARK,
-                  color: i === 0 ? CREAM : INK,
+                  background: i === activeTab ? GREEN : CREAM_DARK,
+                  color: i === activeTab ? CREAM : INK,
                   fontWeight: 600,
+                  transition: "background 200ms var(--ease-arrive), color 200ms var(--ease-arrive), transform 150ms ease-out",
                 }}
               >
                 {tab.label}
@@ -226,7 +297,7 @@ export default function Home() {
           >
             <span
               className="text-[11px] tracking-[0.2em] uppercase"
-              style={{ fontFamily: "var(--font-label)", color: GOLD }}
+              style={{ fontFamily: "var(--font-label)", color: GOLD_ON_DARK }}
             >
               What You Get
             </span>
@@ -242,8 +313,8 @@ export default function Home() {
                 style={{ background: CREAM, border: `1px solid ${CREAM_DARK}`, transitionDelay: `${i * 70}ms` }}
               >
                 <p
-                  className="text-[10px] tracking-[0.15em] uppercase mb-2"
-                  style={{ fontFamily: "var(--font-label)", color: GOLD }}
+                  className="text-[11px] tracking-[0.15em] uppercase mb-2"
+                  style={{ fontFamily: "var(--font-label)", color: GOLD_ON_LIGHT }}
                 >
                   Included
                 </p>
@@ -267,7 +338,7 @@ export default function Home() {
             className="stamp-seal absolute top-6 right-6 sm:top-8 sm:right-8 w-16 h-16 rounded-full hidden sm:flex items-center justify-center text-center"
             style={{
               border: `1.5px dashed ${GOLD}`,
-              color: GOLD,
+              color: GOLD_ON_LIGHT,
               fontFamily: "var(--font-label)",
             }}
           >
@@ -279,7 +350,7 @@ export default function Home() {
           </div>
           <p
             className="text-[11px] tracking-[0.25em] uppercase mb-3"
-            style={{ fontFamily: "var(--font-label)", color: GOLD }}
+            style={{ fontFamily: "var(--font-label)", color: GOLD_ON_LIGHT }}
           >
             Clause 1 — Client Guarantee
           </p>
@@ -300,7 +371,7 @@ export default function Home() {
       <section id="what-you-get" className="max-w-6xl mx-auto px-6 pb-20">
         <p
           className="text-[11px] tracking-[0.25em] uppercase mb-2"
-          style={{ fontFamily: "var(--font-label)", color: GOLD }}
+          style={{ fontFamily: "var(--font-label)", color: GOLD_ON_LIGHT }}
         >
           Schedule A
         </p>
@@ -358,14 +429,14 @@ export default function Home() {
           <div>
             <p
               className="text-[11px] tracking-[0.25em] uppercase mb-3"
-              style={{ fontFamily: "var(--font-label)", color: GOLD }}
+              style={{ fontFamily: "var(--font-label)", color: GOLD_ON_DARK }}
             >
               Signed &amp; Issued By
             </p>
             <h2 className="text-2xl sm:text-3xl mb-1" style={{ fontWeight: 700 }}>
               {FOUNDER.name}
             </h2>
-            <p className="text-sm mb-6" style={{ color: GOLD }}>
+            <p className="text-sm mb-6" style={{ color: GOLD_ON_DARK }}>
               {FOUNDER.credential}
             </p>
             <div className="space-y-4 leading-relaxed max-w-2xl" style={{ color: CREAM + "cc" }}>
@@ -381,7 +452,7 @@ export default function Home() {
       <section id="terms" className="max-w-3xl mx-auto px-6 py-20 text-center">
         <p
           className="text-[11px] tracking-[0.25em] uppercase mb-3"
-          style={{ fontFamily: "var(--font-label)", color: GOLD }}
+          style={{ fontFamily: "var(--font-label)", color: GOLD_ON_LIGHT }}
         >
           Schedule B — Licensing Fee
         </p>
@@ -419,7 +490,7 @@ export default function Home() {
       <section id="faq" className="max-w-3xl mx-auto px-6 pb-20">
         <p
           className="text-[11px] tracking-[0.25em] uppercase mb-2"
-          style={{ fontFamily: "var(--font-label)", color: GOLD }}
+          style={{ fontFamily: "var(--font-label)", color: GOLD_ON_LIGHT }}
         >
           Schedule C — Disclosure
         </p>
@@ -439,7 +510,7 @@ export default function Home() {
                   <span className="text-sm font-medium">{faq.q}</span>
                   <span
                     className="transition-transform duration-200 ease-out"
-                    style={{ color: GOLD, transform: open ? "rotate(45deg)" : "rotate(0deg)" }}
+                    style={{ color: GOLD_ON_LIGHT, transform: open ? "rotate(45deg)" : "rotate(0deg)" }}
                   >
                     +
                   </span>
@@ -504,7 +575,7 @@ export default function Home() {
             >
               <span
                 className="text-xs tracking-[0.1em] uppercase"
-                style={{ color: GOLD, fontWeight: 700 }}
+                style={{ color: GOLD_ON_DARK, fontWeight: 700 }}
               >
                 Chat with VibeLabs
               </span>
