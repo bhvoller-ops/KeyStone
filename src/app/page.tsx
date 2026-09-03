@@ -49,14 +49,33 @@ export default function Home() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [chatOpen, setChatOpen] = useState(false);
   const [leadEmail, setLeadEmail] = useState("");
+  const [leadMessage, setLeadMessage] = useState("");
+  const [leadWebsite, setLeadWebsite] = useState(""); // honeypot — real visitors never see this field
   const [leadSent, setLeadSent] = useState(false);
+  const [leadSending, setLeadSending] = useState(false);
+  const [leadError, setLeadError] = useState<string | null>(null);
   const remaining = SPOTS.total - SPOTS.claimed;
 
-  function submitLead(e: React.FormEvent) {
+  async function submitLead(e: React.FormEvent) {
     e.preventDefault();
-    // UI-only: no backend is wired up yet. Wire this to a real lead
-    // endpoint / CRM before launch — see PRODUCT.md open items.
-    setLeadSent(true);
+    setLeadSending(true);
+    setLeadError(null);
+    try {
+      const res = await fetch("/api/lead", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: leadEmail, message: leadMessage, website: leadWebsite }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || "Something went wrong — please call us instead.");
+      }
+      setLeadSent(true);
+    } catch (err) {
+      setLeadError(err instanceof Error ? err.message : "Something went wrong — please call us instead.");
+    } finally {
+      setLeadSending(false);
+    }
   }
 
   return (
@@ -468,15 +487,45 @@ export default function Home() {
                     placeholder="you@email.com"
                     value={leadEmail}
                     onChange={(e) => setLeadEmail(e.target.value)}
-                    className="text-sm px-3 py-2.5 rounded-sm outline-none"
+                    disabled={leadSending}
+                    className="text-sm px-3 py-2.5 rounded-sm outline-none disabled:opacity-60"
                     style={{ background: "#fff", border: `1px solid ${CREAM_DARK}`, color: INK }}
                   />
+                  <textarea
+                    placeholder="What's on your mind? (optional)"
+                    value={leadMessage}
+                    onChange={(e) => setLeadMessage(e.target.value)}
+                    disabled={leadSending}
+                    rows={2}
+                    className="text-sm px-3 py-2.5 rounded-sm outline-none resize-none disabled:opacity-60"
+                    style={{ background: "#fff", border: `1px solid ${CREAM_DARK}`, color: INK }}
+                  />
+                  {/* Honeypot — hidden from real visitors via CSS, not just
+                      "display:none" (some bots skip those), and kept out of
+                      the tab order and screen-reader flow. */}
+                  <input
+                    type="text"
+                    name="website"
+                    value={leadWebsite}
+                    onChange={(e) => setLeadWebsite(e.target.value)}
+                    tabIndex={-1}
+                    autoComplete="off"
+                    aria-hidden="true"
+                    className="absolute opacity-0 pointer-events-none"
+                    style={{ left: "-9999px", width: 1, height: 1 }}
+                  />
+                  {leadError && (
+                    <p className="text-xs" style={{ color: "#B3261E" }}>
+                      {leadError}
+                    </p>
+                  )}
                   <button
                     type="submit"
-                    className="text-xs tracking-[0.08em] uppercase px-3 py-2.5 rounded-sm"
+                    disabled={leadSending}
+                    className="text-xs tracking-[0.08em] uppercase px-3 py-2.5 rounded-sm disabled:opacity-60"
                     style={{ background: GREEN, color: CREAM, fontWeight: 700 }}
                   >
-                    Get a Callback
+                    {leadSending ? "Sending…" : "Get a Callback"}
                   </button>
                 </form>
               )}
