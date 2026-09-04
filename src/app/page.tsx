@@ -4,6 +4,7 @@ import { Bitter, Archivo } from "next/font/google";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import {
+  EXAMPLE_SITE_URL,
   FAQS,
   FOUNDER,
   GUARANTEE,
@@ -351,6 +352,18 @@ export default function Home() {
               {PRICE.monthly}/mo after trial &middot; card required, not
               charged
             </span>
+            {/* Proof before pitch — added after real feedback that the page
+                never shows the actual deliverable, only describes it. A
+                real, live, publicly-viewable WebGenie site, not a mockup. */}
+            <a
+              href={EXAMPLE_SITE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm mt-1 underline decoration-1 underline-offset-4 transition-colors"
+              style={{ color: CREAM + "cc", textDecorationColor: GOLD + "aa" }}
+            >
+              See a real client site &rarr;
+            </a>
           </div>
         </div>
       </section>
@@ -543,6 +556,35 @@ export default function Home() {
               </li>
             ))}
           </ul>
+
+          {/* Proof, again, right where the deliverable is being described in
+              detail — the moment a skeptical reader is deciding whether to
+              believe the bullet list above. */}
+          <a
+            href={EXAMPLE_SITE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="reveal mt-8 flex items-center justify-between gap-4 rounded-sm p-5 transition-transform duration-150 ease-out hover:-translate-y-0.5"
+            style={{ background: CREAM, border: `1px solid ${GOLD}66` }}
+          >
+            <div>
+              <p
+                className="text-[11px] tracking-[0.15em] uppercase mb-1.5"
+                style={{ fontFamily: "var(--font-label)", color: GOLD_ON_LIGHT }}
+              >
+                Not a mockup
+              </p>
+              <p className="text-sm font-semibold" style={{ color: INK }}>
+                See a real, live client site built on this exact platform
+              </p>
+            </div>
+            <span
+              className="shrink-0 text-xs tracking-[0.1em] uppercase px-4 py-2.5 rounded-sm"
+              style={{ fontFamily: "var(--font-label)", background: GOLD, color: GREEN_DEEP, fontWeight: 700 }}
+            >
+              View Site &rarr;
+            </span>
+          </a>
         </div>
       </section>
 
