@@ -46,6 +46,39 @@ export const FOUNDER = {
 // (open item in PRODUCT.md). Referred to generically until named.
 export const PLATFORM_LABEL = "your white-label AI agency";
 
+// What's actually rebranded, stated precisely rather than left implicit —
+// added in response to real user feedback ("what is being white-labeled?
+// explain exactly what the person is applying for"). The platform itself
+// (WebGenie) is real, confirmed, and already built in the sibling project;
+// what's rebranded is specifically the client-facing output, not the
+// member's own login dashboard — see CLAUDE.md §2s Phase 4 in the app repo.
+export const WHITE_LABEL = {
+  platformName: "WebGenie",
+  headline: "One Platform. Your Name on Everything Your Clients See.",
+  // What the member gets, plainly:
+  memberGets:
+    "You run your agency from your own WebGenie dashboard — that part stays WebGenie, the same way a franchisee still uses the franchisor's back-office system.",
+  // What the client sees, plainly — this is the actual product being sold:
+  clientSees:
+    "Every AI-powered website, embedded chat assistant, and lead-capture form your clients interact with carries your agency's name, logo, and colors. They never see \"WebGenie\" or \"VibeLabs\" anywhere.",
+  deliverables: [
+    "An AI-generated website built and branded in your agency's name",
+    "An embedded AI chat assistant that answers questions and captures leads for your client, under your brand",
+    "A lead-capture form on every site, routing straight into your own dashboard",
+  ],
+} as const;
+
+// Referral/commission mechanism, stated honestly without a dollar figure —
+// the exact commission amount for a VibeLabs-sourced referral isn't
+// confirmed yet; the mechanism itself (flat fee per converted signup,
+// tracked automatically, paid by hand) is real and already built in the
+// sibling app repo's partner program.
+export const REFERRAL = {
+  headline: "Refer an Agency Owner. Earn When They Join.",
+  body: "Know another agency owner, freelancer, or consultant who'd want this? Refer them and earn a commission the moment their subscription actually converts — tracked automatically against your own referral link, no spreadsheets. Commission terms are confirmed when you sign up as a partner and are paid out by hand, not automatically deducted from anything you owe.",
+  ctaLabel: "Become a Partner",
+} as const;
+
 export const TOOLS = [
   {
     id: "lead-finder",
@@ -76,7 +109,11 @@ export const TOOLS = [
 export const FAQS = [
   {
     q: "What exactly am I getting for $97/month?",
-    a: `A fully branded, white-label AI-powered agency in your own name — plus the ${TOOLS.length} tools above, the implementation playbooks to deliver client work without a technical background, and the 60-day client guarantee.`,
+    a: `Access to WebGenie, rebranded in your agency's name for every client that sees it — plus the ${TOOLS.length} tools above, the implementation playbooks to deliver client work without a technical background, and the 60-day client guarantee. See "Schedule A-1" above for exactly what's rebranded and what isn't.`,
+  },
+  {
+    q: "How does the referral commission work?",
+    a: "Refer another agency owner and you earn a flat commission the moment their subscription converts, tracked automatically against your own referral link. Exact terms are confirmed when you sign up as a partner and paid out by hand.",
   },
   {
     q: "How does the 14-day free trial work?",

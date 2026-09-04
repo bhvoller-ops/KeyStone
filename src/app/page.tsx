@@ -8,10 +8,12 @@ import {
   FOUNDER,
   GUARANTEE,
   PRICE,
+  REFERRAL,
   SPOTS,
   SUPPORT_CHANNEL,
   TOOLS,
   TRIAL,
+  WHITE_LABEL,
 } from "@/lib/content";
 
 const serif = Bitter({
@@ -40,19 +42,17 @@ const GOLD = "#A9812F";
 const GOLD_ON_LIGHT = "#7C591F"; // small text on CREAM/CREAM_DARK — 5.49:1 / 4.74:1
 const GOLD_ON_DARK = "#C9A44D"; // small text on GREEN_DEEP — 6.33:1
 
-// Same-page anchors, plus a real handoff tab — VibeLabs-v2 stays a thin
-// marketing front door, so "Partner With Us" reuses webgenie-ai's already-
-// real, already-working partner/referral program rather than standing up a
-// second one. Matches how the CTAs already hand off to /join.
+// Same-page anchors — every tab now lands on a real on-page section before
+// any external handoff, including referrals: "Refer & Earn" explains the
+// mechanism, then its own CTA hands off to webgenie-ai's already-real,
+// already-working partner/referral program rather than standing up a
+// second one (same pattern the pricing CTA already uses for /join).
 const TABS: { label: string; href: string; external?: boolean }[] = [
   { label: "Overview", href: "#overview" },
   { label: "What You Get", href: "#what-you-get" },
+  { label: "White Label", href: "#white-label" },
+  { label: "Refer & Earn", href: "#refer" },
   { label: "FAQ", href: "#faq" },
-  {
-    label: "Partner With Us",
-    href: "https://app.vibelabsagency.com/partner-signup?utm_source=vibelabs-v2&utm_campaign=franchise&utm_content=nav",
-    external: true,
-  },
 ];
 
 const PHONE_DISPLAY = "(470) 376-9804";
@@ -118,8 +118,10 @@ const SECTION_TAB_MAP: Record<string, number> = {
   overview: 0,
   guarantee: 0,
   "what-you-get": 1,
-  terms: 1,
-  faq: 2,
+  "white-label": 2,
+  terms: 2,
+  refer: 3,
+  faq: 4,
 };
 
 function useNavScrollSpy(): number {
@@ -479,6 +481,71 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ===== White Label — what's actually rebranded, stated plainly.
+          Added in direct response to real user feedback: "clarify Agency,
+          what is being white-labeled, explain what the person is applying
+          for." Schedule-lettered to match the site's existing
+          franchise-document motif (Schedule A/B/C already established). */}
+      <section id="white-label" className="py-20" style={{ background: CREAM_DARK }}>
+        <div className="max-w-4xl mx-auto px-6">
+          <p
+            className="text-[11px] tracking-[0.25em] uppercase mb-2"
+            style={{ fontFamily: "var(--font-label)", color: GOLD_ON_LIGHT }}
+          >
+            Schedule A-1 — What&rsquo;s White-Labeled
+          </p>
+          <h2 className="text-3xl sm:text-4xl mb-4" style={{ fontWeight: 700 }}>
+            {WHITE_LABEL.headline}
+          </h2>
+          <p className="leading-relaxed max-w-2xl mb-10" style={{ color: INK + "cc" }}>
+            &ldquo;White-label&rdquo; means something specific here — not a vague
+            promise. {WHITE_LABEL.platformName} is the real, working platform
+            behind every tool on this page. Here&rsquo;s exactly which parts
+            carry your name and which don&rsquo;t:
+          </p>
+          <div className="grid sm:grid-cols-2 gap-5">
+            <div
+              className="reveal rounded-sm p-6"
+              style={{ background: CREAM, border: `1px solid ${CREAM_DARK}` }}
+            >
+              <p
+                className="text-[11px] tracking-[0.15em] uppercase mb-2"
+                style={{ fontFamily: "var(--font-label)", color: GOLD_ON_LIGHT }}
+              >
+                What You Manage
+              </p>
+              <p className="text-sm leading-relaxed" style={{ color: INK + "cc" }}>
+                {WHITE_LABEL.memberGets}
+              </p>
+            </div>
+            <div
+              className="reveal rounded-sm p-6"
+              style={{ background: GREEN_DEEP, border: `1px solid ${GOLD}55`, transitionDelay: "80ms" }}
+            >
+              <p
+                className="text-[11px] tracking-[0.15em] uppercase mb-2"
+                style={{ fontFamily: "var(--font-label)", color: GOLD_ON_DARK }}
+              >
+                What Your Clients See
+              </p>
+              <p className="text-sm leading-relaxed" style={{ color: CREAM + "dd" }}>
+                {WHITE_LABEL.clientSees}
+              </p>
+            </div>
+          </div>
+          <ul className="mt-8 space-y-2.5">
+            {WHITE_LABEL.deliverables.map((d) => (
+              <li key={d} className="flex items-start gap-2.5 text-sm leading-relaxed" style={{ color: INK + "cc" }}>
+                <span aria-hidden style={{ color: GOLD_ON_LIGHT, fontWeight: 700 }}>
+                  &bull;
+                </span>
+                {d}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
       {/* ===== Founder — license issuer ===== */}
       <section
         className="py-20"
@@ -562,13 +629,52 @@ export default function Home() {
         </p>
       </section>
 
+      {/* ===== Refer & Earn — commission mechanism, stated honestly.
+          Added in direct response to real user feedback: "commission
+          structure needs clarification." No dollar figure published here —
+          the exact commission for a VibeLabs-sourced referral isn't
+          confirmed yet; the mechanism (flat fee per converted signup,
+          tracked automatically, paid by hand) is real and already built. */}
+      <section id="refer" className="max-w-4xl mx-auto px-6 py-20">
+        <div
+          className="rounded-sm p-8 sm:p-10 text-center"
+          style={{ background: CREAM_DARK, border: `1px solid ${GOLD}55` }}
+        >
+          <p
+            className="text-[11px] tracking-[0.25em] uppercase mb-3"
+            style={{ fontFamily: "var(--font-label)", color: GOLD_ON_LIGHT }}
+          >
+            Schedule C — Referral Program
+          </p>
+          <h2 className="text-2xl sm:text-3xl mb-4 max-w-lg mx-auto" style={{ fontWeight: 700 }}>
+            {REFERRAL.headline}
+          </h2>
+          <p className="leading-relaxed mb-8 max-w-xl mx-auto" style={{ color: INK + "cc" }}>
+            {REFERRAL.body}
+          </p>
+          <a
+            href="https://app.vibelabsagency.com/partner-signup?utm_source=vibelabs-v2&utm_campaign=franchise&utm_content=refer-section"
+            className="inline-block px-8 py-3.5 rounded-sm text-sm tracking-[0.06em] uppercase transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-1 active:translate-y-0"
+            style={{
+              fontFamily: "var(--font-label)",
+              background: GOLD,
+              color: GREEN_DEEP,
+              fontWeight: 700,
+              boxShadow: `0 14px 34px ${GOLD}33`,
+            }}
+          >
+            {REFERRAL.ctaLabel}
+          </a>
+        </div>
+      </section>
+
       {/* ===== FAQ — disclosure ===== */}
       <section id="faq" className="max-w-3xl mx-auto px-6 pb-20">
         <p
           className="text-[11px] tracking-[0.25em] uppercase mb-2"
           style={{ fontFamily: "var(--font-label)", color: GOLD_ON_LIGHT }}
         >
-          Schedule C — Disclosure
+          Schedule D — Disclosure
         </p>
         <h2 className="text-2xl mb-6" style={{ fontWeight: 700 }}>
           Frequently Asked
