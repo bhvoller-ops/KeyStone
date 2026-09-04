@@ -79,6 +79,14 @@ export const REFERRAL = {
   ctaLabel: "Become a Partner",
 } as const;
 
+// A real, live, publicly-viewable WebGenie demo site (fixture business data,
+// not a real company) — not a mockup or screenshot. Confirmed resolving
+// (200) against production before wiring in. Proof the deliverable is real,
+// answering "what does this actually look like" before the visitor is asked
+// to trust a description of it.
+export const EXAMPLE_SITE_URL =
+  "https://app.vibelabsagency.com/api/demo-site?b=eyJpZCI6InNhbXBsZS1wbHVtYmVyIiwibmFtZSI6IkNvcm5lcnN0b25lIFBsdW1iaW5nIENvLiIsInBob25lIjoiKDQwNCkgNTU1LTAxNDgiLCJhZGRyZXNzIjoiIiwiY2l0eSI6IkF0bGFudGEiLCJzdGF0ZSI6IkdBIiwicmF0aW5nIjo0LjksInJldmlld0NvdW50IjoyMTQsImluZHVzdHJ5IjoicGx1bWJlciIsInNvdXJjZSI6InNhbXBsZSJ9&badge=0";
+
 export const TOOLS = [
   {
     id: "lead-finder",
